@@ -2,6 +2,8 @@ export PROJECT_ROOT=$(shell pwd)
 export USER_UID=$(shell id -u)
 export USER_GID=$(shell id -g)
 
+.PHONY: isaac_sim-fix-permissions
+
 ros2-up:
 	@xhost local:root; \
 	docker compose up --build -d ros2
@@ -18,7 +20,10 @@ isaac_sim-up:
 	sudo chown -R 1234:1234 ~/docker/isaac-sim ~/.cache/ov/hub; \
 	docker compose up --build -d isaac_sim_hub isaac_sim
 
-isaac_sim-exec:
+isaac_sim-fix-permissions:
+	@chown -R 1234:1234 ~/docker/isaac-sim ~/.cache/ov/hub
+
+isaac_sim-exec: isaac_sim-fix-permissions
 	@docker compose exec isaac_sim bash
 
 isaac_sim-down:

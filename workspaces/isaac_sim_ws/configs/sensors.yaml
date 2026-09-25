@@ -1,0 +1,80 @@
+cameras:
+  - name: front_depth
+    model: generic
+    enabled: false
+    parent_path: /Environment/Sensors/Cameras
+    position: [0.0, 0.0, 0.0]
+    rotation: [90.0, 0.0, 180.0]
+    resolution: [640, 480]
+    clipping_range: [0.1, 100.0]
+    annotators:
+      - rgb
+      - distance_to_image_plane
+
+  - name: realsense_d455
+    model: realsense_d455
+    enabled: true
+    fixed: true
+    prim_path: /Environment/Sensors/Cameras/RealsenseD455
+    translation: [0.0, 0.0, 0.0]
+    orientation: [0,0, -90]
+    optical_roll: 0
+    resolution: [640, 480]
+    depth_visualization_range: [0.1, 100]
+    auto_depth_visualization: true
+    depth_annotator: depth_sensor_distance
+    annotators:
+      - depth_sensor_distance
+
+  - name: orbbec_gemini2
+    model: orbbec_gemini2
+    enabled: false
+    fixed: true
+    prim_path: /Environment/Sensors/Cameras/OrbbecGemini2
+    translation: [0.0, 0.0, 0.0]
+    orientation: [90.0, 0.0, 0.0]
+    optical_roll: 0.0
+    resolution: [1280, 800]
+    depth_visualization_range: [0.15, 10.0]
+    auto_depth_visualization: true
+    depth_annotator: distance_to_image_plane
+    annotators:
+      - distance_to_image_plane
+
+  - name: oak_d_tof
+    model: luxonis_oak_d_tof
+    enabled: false
+    fixed: true
+    prim_path: /Environment/Sensors/Cameras/OakDToF
+    translation: [0.0, -0.4, 0.0]
+    orientation: [0.0, 0.0, -90.0]
+    optical_roll: 0.0
+    optical_yaw: 180.0
+    resolution: [640, 480]
+    depth_visualization_range: [0.2, 5.0]
+    auto_depth_visualization: true
+    depth_annotator: distance_to_image_plane
+    annotators:
+      - distance_to_image_plane
+    noise_model: tof
+    noise_seed: 42
+    noise_parameters:
+      sigma_base_m: 0.002
+      sigma_per_m2: 0.001
+      quantization_m: 0.001
+      dropout_probability: 0.005
+      edge_threshold_m: 0.08
+      flying_pixel_probability: 0.15
+      edge_error_sigma_m: 0.04
+
+  - name: top_depth
+    model: generic
+    enabled: false
+    parent_path: /Environment/Sensors/Cameras
+    position: [0.0, 0.0, 0.0]
+    look_at: [0.0, 0.0, 0.0]
+    resolution: [640, 480]
+    clipping_range: [0.1, 100.0]
+    annotators:
+      - rgb
+      - distance_to_image_plane
