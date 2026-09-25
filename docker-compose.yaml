@@ -40,8 +40,11 @@ services:
     stdin_open: true
     tty: true
     environment:
+      - DISPLAY=${DISPLAY}
+      - XAUTHORITY=/tmp/.docker.xauth
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
       - NVIDIA_VISIBLE_DEVICES=${GPU_DEVICE:-all}
+      - NVIDIA_DRIVER_CAPABILITIES=all
     volumes:
       - ${HOME}/.Xauthority:/isaac-sim/.Xauthority
       - ${ISAAC_SIM_DATA:-~/docker/isaac-sim}/cache/main:/isaac-sim/.cache:rw
