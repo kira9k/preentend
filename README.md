@@ -153,7 +153,7 @@ ros2 launch preentend_moveit_config preentend_moveit_gazebo.launch.py
 
 Между роботами, вдоль оси X, стоит статическая модель Toyota Prius из [набора моделей Gazebo](https://github.com/osrf/gazebo_models/tree/master/prius_hybrid). Модель целиком находится в репозитории: кузов, салон, стёкла и колёса с текстурами. Дополнительные файлы скачивать не требуется. Для быстрых проверок столкновений Gazebo и MoveIt используют одинаковый габаритный параллелепипед 4,70 × 2,05 × 1,56 м. MoveIt получает препятствие через `/apply_planning_scene` при запуске обоих сценариев MoveIt. В RViz препятствие скрыто визуально, но участвует в планировании.
 
-В конфигурации MoveIt RViz добавлены панели изображения левой камеры: RGB (`/left_camera/color/image_raw`) и нормализованная глубина (`/left_camera/depth/image_rect_raw`). Для правой камеры замените `left_camera` на `right_camera` в свойстве `Topic` соответствующей панели.
+В конфигурации MoveIt RViz отображаются два RGB-потока: с камеры левого робота (`/left_camera/color/image_raw`) и с камеры правого робота (`/right_camera/color/image_raw`).
 
 Для проверки состояния контроллеров в другом терминале контейнера:
 
