@@ -1,5 +1,5 @@
-.env
-
+__pycache__/
 build/
 install/
 log/
+workspaces/ros2_ws/src/preentend_gazebo/meshes/lada_2107/LADA_2107_ASSEMBLY.STL

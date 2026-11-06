@@ -1,13 +1,17 @@
 export PROJECT_ROOT=$(shell pwd)
-export USER_UID=$(shell id -u)
-export USER_GID=$(shell id -g)
+export USER_ID=$(shell id -u)
+export GROUP_ID=$(shell id -g)
+export DRI_RENDER_GID=$(shell stat -c '%g' /dev/dri/renderD* 2>/dev/null | head -n 1)
+export DRI_CARD_GID=$(shell stat -c '%g' /dev/dri/card* 2>/dev/null | head -n 1)
 
 ros2-up:
 	@xhost local:; \
 	docker compose up --build -d ros2
 
-ros2-exec:
+ros2-enter:
 	@docker compose exec ros2 bash
+
+ros2-exec: ros2-enter
 
 ros2-down:
 	@docker compose down ros2
@@ -18,7 +22,7 @@ isaac_sim-up:
 	sudo chown -R 1234:1234 ~/docker/isaac-sim ~/.cache/ov/hub; \
 	docker compose up --build -d isaac_sim_hub isaac_sim
 
-isaac_sim-exec:
+isaac_sim-enter:
 	@docker compose exec isaac_sim bash
 
 isaac_sim-down:

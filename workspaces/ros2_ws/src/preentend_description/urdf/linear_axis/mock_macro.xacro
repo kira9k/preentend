@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro">
+    <xacro:include filename="$(find preentend_description)/urdf/common/link_macro.xacro" />
+
+    <xacro:macro name="linear_axis"
+        params="prefix:='' 
+        parent *origin 
+        rail_length:=6 rail_width:=0.4 rail_height:=0.16
+        carrier_length:=0.4 carrier_width:=0.4 carrier_height:=0.4
+        effort_limit:=5000 velocity_limit:=0.5
+        material:='dark_gray'
+        use_gazebo:='false' use_ros2_control:='false' hardware_plugin:='mock_components/GenericSystem'">
+        <xacro:if value="${use_gazebo}">
+            <xacro:include
+                filename="$(find preentend_description)/urdf/linear_axis/mock.gazebo.xacro" />
+            <xacro:linear_axis_gazebo prefix="${prefix}" />
+        </xacro:if>
+
+        <xacro:if value="${use_ros2_control}">
+            <xacro:include
+                filename="$(find preentend_description)/urdf/linear_axis/mock.transmission.xacro" />
+            <xacro:linear_axis_transmission prefix="${prefix}" />
+            <xacro:include
+                filename="$(find preentend_description)/urdf/linear_axis/mock.ros2_control.xacro" />
+            <xacro:linear_axis_ros2_control prefix="${prefix}" hardware_plugin="${hardware_plugin}" />
+        </xacro:if>
+
+        <xacro:property name="travel" value="${(rail_length - carrier_length) / 2}" />
+
+        <link name="${prefix}linear_axis_origin" />
+        <joint name="${prefix}linear_axis_origin_joint" type="fixed">
+            <xacro:insert_block name="origin" />
+            <parent link="${parent}" />
+            <child link="${prefix}linear_axis_origin" />
+        </joint>
+
+        <xacro:link_box name="${prefix}linear_axis_rail_link"
+            length="${rail_length}" width="${rail_width}" height="${rail_height}"
+            mass="10" material="${material}" />
+        <joint name="${prefix}linear_axis_rail_origin_joint" type="fixed">
+            <origin xyz="0 0 ${rail_height / 2}" />
+            <parent link="${prefix}linear_axis_origin" />
+            <child link="${prefix}linear_axis_rail_link" />
+        </joint>
+
+        <xacro:link_box name="${prefix}linear_axis_carrier_link"
+            length="${carrier_length}" width="${carrier_width}" height="${carrier_height}"
+            mass="5" material="${material}" />
+        <joint name="${prefix}linear_axis_joint" type="prismatic">
+            <origin xyz="0 0 ${(rail_height + carrier_height) / 2}" />
+            <parent link="${prefix}linear_axis_rail_link" />
+            <child link="${prefix}linear_axis_carrier_link" />
+            <axis xyz="1 0 0" />
+            <limit lower="${-travel}" upper="${travel}" effort="${effort_limit}"
+                velocity="${velocity_limit}" />
+        </joint>
+
+        <link name="${prefix}linear_axis_carrier_mount" />
+        <joint name="${prefix}linear_axis_carrier_mount_joint" type="fixed">
+            <origin xyz="0 0 ${carrier_height / 2}" />
+            <parent link="${prefix}linear_axis_carrier_link" />
+            <child link="${prefix}linear_axis_carrier_mount" />
+        </joint>
+    </xacro:macro>
+</robot>

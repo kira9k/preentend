@@ -1,6 +1,6 @@
-FROM osrf/ros:jazzy-desktop-full
+FROM osrf/ros:jazzy-desktop-full AS img_base
 
-ENV QT_X11_NO_MITSHM 1
+FROM img_base AS img_user
 
 ARG USERNAME=ros2_user
 ARG USER_UID=1000
@@ -10,7 +10,7 @@ ARG USER_GID=$USER_UID
 RUN if id -u $USER_UID ; then userdel `id -un $USER_UID` ; fi
 
 # Create the user
-RUN groupadd --gid $USER_GID $USERNAME \
+RUN (getent group "$USER_GID" >/dev/null || groupadd --gid "$USER_GID" "$USERNAME") \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
     #
     # [Optional] Add sudo support. Omit if you don't need to install software after connecting.
@@ -22,16 +22,23 @@ RUN apt-get update && apt-get upgrade -y
 RUN apt-get install -y python3-pip
 ENV SHELL /bin/bash
 
+FROM img_user AS img_deps
+
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get update && apt-get install -y \
         ros-jazzy-ros2-control \
         ros-jazzy-ros2-controllers \
         ros-jazzy-moveit \
         ros-jazzy-joint-state-publisher \
-        ros-jazzy-joint-state-publisher-gui
+        ros-jazzy-joint-state-publisher-gui \
+        ros-jazzy-ros-gz \
+        ros-jazzy-gz-ros2-control
+
+FROM img_deps AS img_final
 
 RUN echo "source /opt/ros/jazzy/setup.bash" >> /home/${USERNAME}/.bashrc
 
 USER ${USERNAME}
 
+ENTRYPOINT [""]
 CMD ["/bin/bash"]

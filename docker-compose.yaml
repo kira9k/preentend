@@ -3,16 +3,27 @@ services:
     build:
       dockerfile: docker/Dockerfile.ros2
       args:
-        - USER_UID=${USER_UID}
-        - USER_GID=${USER_GID}
+        - USER_UID=${USER_ID}
+        - USER_GID=${GROUP_ID}
     container_name: ${PROJECT_NAME}-ros2
     network_mode: host
     privileged: true
+    runtime: nvidia
+    group_add:
+      - ${DRI_RENDER_GID:-109}
+      - ${DRI_CARD_GID:-44}
     tty: true
     stdin_open: true
     environment:
       - DISPLAY=${DISPLAY:-0}
+      - NVIDIA_VISIBLE_DEVICES=${GPU_DEVICE:-all}
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      # hybrid laptops: render OpenGL on the NVIDIA GPU instead of the iGPU
+      - __NV_PRIME_RENDER_OFFLOAD=1
+      - __GLX_VENDOR_LIBRARY_NAME=nvidia
+      - QT_X11_NO_MITSHM=1
       - XAUTHORITY=/tmp/.docker.xauth
+      - GZ_IP=127.0.0.1
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
@@ -42,6 +53,7 @@ services:
     environment:
       - DISPLAY=${DISPLAY}
       - XAUTHORITY=/tmp/.docker.xauth
+      - ACCEPT_EULA=Y
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
       - NVIDIA_VISIBLE_DEVICES=${GPU_DEVICE:-all}
       - NVIDIA_DRIVER_CAPABILITIES=all

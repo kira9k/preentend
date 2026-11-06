@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro">
+    <xacro:macro name="linear_axis_transmission"
+        params="prefix:='' hardware_interface:='hardware_interface/PositionJointInterface' mechanical_reduction:=1">
+        <transmission name="${prefix}linear_axis_joint_transmission">
+            <type>transmission_interface/SimpleTransmission</type>
+            <joint name="${prefix}linear_axis_joint">
+                <hardwareInterface>${hardware_interface}</hardwareInterface>
+            </joint>
+            <actuator name="${prefix}linear_axis_motor">
+                <hardwareInterface>${hardware_interface}</hardwareInterface>
+                <mechanicalReduction>${mechanical_reduction}</mechanicalReduction>
+            </actuator>
+        </transmission>
+    </xacro:macro>
+</robot>

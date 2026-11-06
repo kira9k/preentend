@@ -1,0 +1,73 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 100
+    enforce_command_limits: true
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    left_arm_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    right_arm_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+left_arm_controller:
+  ros__parameters:
+    joints:
+      - left_linear_axis_joint
+      - left_J1
+      - left_J2
+      - left_J3
+      - left_J4
+      - left_J5
+      - left_J6
+    command_interfaces:
+      - position
+      - velocity
+    state_interfaces:
+      - position
+      - velocity
+    constraints:
+      goal_time: 0.5
+      stopped_velocity_tolerance: 0.0
+      left_linear_axis_joint: { trajectory: 1.0, goal: 0.01 }
+      left_J1: { trajectory: 1.0, goal: 0.01 }
+      left_J2: { trajectory: 1.0, goal: 0.01 }
+      left_J3: { trajectory: 1.0, goal: 0.01 }
+      left_J4: { trajectory: 1.0, goal: 0.01 }
+      left_J5: { trajectory: 1.0, goal: 0.01 }
+      left_J6: { trajectory: 1.0, goal: 0.01 }
+    interface_name: position
+    state_publish_rate: 25.0
+    action_monitor_rate: 10.0
+
+right_arm_controller:
+  ros__parameters:
+    joints:
+      - right_linear_axis_joint
+      - right_J1
+      - right_J2
+      - right_J3
+      - right_J4
+      - right_J5
+      - right_J6
+    command_interfaces:
+      - position
+      - velocity
+    state_interfaces:
+      - position
+      - velocity
+    constraints:
+      goal_time: 0.5
+      stopped_velocity_tolerance: 0.0
+      right_linear_axis_joint: { trajectory: 1.0, goal: 0.01 }
+      right_J1: { trajectory: 1.0, goal: 0.01 }
+      right_J2: { trajectory: 1.0, goal: 0.01 }
+      right_J3: { trajectory: 1.0, goal: 0.01 }
+      right_J4: { trajectory: 1.0, goal: 0.01 }
+      right_J5: { trajectory: 1.0, goal: 0.01 }
+      right_J6: { trajectory: 1.0, goal: 0.01 }
+    interface_name: position
+    state_publish_rate: 25.0
+    action_monitor_rate: 10.0

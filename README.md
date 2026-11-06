@@ -84,56 +84,89 @@ setfacl -d -m u:$(id -u):rwx workspaces/isaac_sim_ws
 
 > С этими настройками **workspaces/isaac_sim_ws** доступна в контейнере **isaac_sim**, а **workspaces/ros2_ws** в контейнере **ros2**
 
-## Запуск контейнеров через Makefile
+## Запуск контейнера ROS 2
 
-1. Пример 1. Запуск контейнера ros2:
+Из корня репозитория:
+
 ```shell
 make ros2-up
+make ros2-enter
 ```
 
-2. Пример 2. Вход в контейнер:
-```shell
-make ros2-exec
-```
+Для остановки только контейнера ROS 2 выполните на хосте `docker compose stop ros2`.
 
-3. Пример 3. Закрытие и удаление контейнера:
-```shell
-make ros2-down
-```
+# Работа с ROS 2
 
-# Работа с ROS из Docker
+Команды ниже выполняются **в контейнере ROS 2**. Рабочее пространство хоста `workspaces/ros2_ws` смонтировано в контейнер по пути `/ros2_ws`. Образ содержит ROS 2 Jazzy, MoveIt 2, Gazebo и `gz_ros2_control`.
 
-1. Билдим пакеты:
+## Сборка рабочего пространства
+
 ```shell
 cd /ros2_ws
 colcon build --symlink-install
-```
-Можно билдить выбранные пакеты если добавить флаг `--packages-select` а после него название пакета. Пример:
-```shell
-colcon build --symlink-install --packages-select preentend_description
-```
-
-2. Сурсим рабочее пространство:
-```
 source install/setup.bash
 ```
 
-> С флагом `--symlink-install` при изменении файлов в уже забилженых пакетах заново их билдить не нужно
+Для сборки пакета вместе с зависимостями можно использовать, например:
 
-## Пакет preentend_description
-
-Можно посмотреть ртк в **rviz**:
 ```shell
-ros2 launch preentend_description view_preentend.launch.py
+colcon build --symlink-install --packages-up-to preentend_moveit_config
+source install/setup.bash
 ```
 
-![preentend_description_rviz](docs/assets/preentend_description_rviz.png) ![preentend_description_jsp_gui](docs/assets/preentend_description_jsp_gui.png)
+В новом терминале снова выполните `source /ros2_ws/install/setup.bash`. После добавления файлов, изменения `CMakeLists.txt` или `package.xml` пересоберите пакеты. `--symlink-install` создает символические ссылки на уже существующие файлы в пакете, что убирает необходимость в постоянной сборке при изменении старых файлов.
 
-## Пакет preentend_moveit_config
+## Пакеты и сценарии запуска
 
-Можно поуправлять роботами по отдельности:
+| Пакет | Назначение |
+| --- | --- |
+| `preentend_description` | Xacro/URDF, геометрия и просмотр модели в RViz |
+| `preentend_controller` | Конфигурация `ros2_control`, контроллеры левой и правой рук с линейными осями |
+| `preentend_gazebo` | Мир Gazebo и запуск симуляции с созданием модели робота |
+| `preentend_moveit_config` | SRDF, планирование MoveIt, конфигурация RViz и запуск с mock или Gazebo |
+
+Запускайте **один** из следующих сценариев в отдельном терминале после сборки и `source install/setup.bash`.
+
+### Просмотр модели без контроллеров
+
 ```shell
-ros2 launch preentend_moveit_config demo.launch.py
+ros2 launch preentend_description preentend_rviz2_display.launch.py
 ```
 
-![preentend_moveit_config](docs/assets/preentend_moveit_config.gif)
+Этот запуск поднимает `robot_state_publisher`, `joint_state_publisher` и RViz. Он предназначен для просмотра модели; контроллеры и MoveIt не запускаются.
+
+### MoveIt с mock-оборудованием
+
+```shell
+ros2 launch preentend_moveit_config preentend_moveit_fake.launch.py
+```
+
+Запускаются `ros2_control_node` с `mock_components/GenericSystem`, `joint_state_broadcaster`, два контроллера траекторий, `move_group` и MoveIt RViz. Контроллеры принимают команды без Gazebo. Публикацию `/joint_states` обеспечивает `joint_state_broadcaster`.
+
+### MoveIt с Gazebo
+
+```shell
+ros2 launch preentend_moveit_config preentend_moveit_gazebo.launch.py
+```
+
+Запускаются Gazebo с миром `preentend_gazebo/worlds/empty.sdf`, публикация описания робота, создание модели в Gazebo, `gz_ros2_control`, контроллеры, мост `/clock`, `move_group` и MoveIt RViz. В этом сценарии узлы используют симуляционное время.
+
+Между роботами, вдоль оси X, стоит статическая модель Toyota Prius из [набора моделей Gazebo](https://github.com/osrf/gazebo_models/tree/master/prius_hybrid). Модель целиком находится в репозитории: кузов, салон, стёкла и колёса с текстурами. Дополнительные файлы скачивать не требуется. Для быстрых проверок столкновений Gazebo и MoveIt используют одинаковый габаритный параллелепипед 4,70 × 2,05 × 1,56 м. MoveIt получает препятствие через `/apply_planning_scene` при запуске обоих сценариев MoveIt. В RViz препятствие скрыто визуально, но участвует в планировании.
+
+В конфигурации MoveIt RViz добавлены панели изображения левой камеры: RGB (`/left_camera/color/image_raw`) и нормализованная глубина (`/left_camera/depth/image_rect_raw`). Для правой камеры замените `left_camera` на `right_camera` в свойстве `Topic` соответствующей панели.
+
+Для проверки состояния контроллеров в другом терминале контейнера:
+
+```shell
+source /ros2_ws/install/setup.bash
+ros2 control list_controllers
+```
+
+## Файлы конфигурации
+
+- `preentend_controller/config/ros2_controllers.yaml` задаёт `joint_state_broadcaster` и контроллеры `left_arm_controller`/`right_arm_controller`.
+- `preentend_moveit_config/config/moveit_controllers.yaml` связывает контроллеры MoveIt с действиями `FollowJointTrajectory`.
+- `preentend_moveit_config/config/ompl_planning.yaml` задаёт OMPL и обработку траекторий перед выполнением.
+- `preentend_moveit_config/srdf/preentend.srdf` задаёт группы `left_arm` и `right_arm` и исключения из проверки самостолкновений.
+
+Вспомогательные launch-файлы `_ros2_control.launch.py` и `_moveit_common.launch.py` используются сценариями выше. Первый выбирает оборудование через `hardware_plugin`: `mock_components/GenericSystem` по умолчанию или `gz_ros2_control/GazeboSimSystem` при запуске с Gazebo.

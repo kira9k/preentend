@@ -1,0 +1,521 @@
+Panels:
+  - Class: rviz_common/Displays
+    Help Height: 70
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Global Options1
+        - /TF1/Frames1
+      Splitter Ratio: 0.6088235378265381
+    Tree Height: 608
+  - Class: rviz_common/Views
+    Expanded:
+      - /Current View1
+    Name: Views
+    Splitter Ratio: 0.5
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Alpha: 0.5
+      Cell Size: 1
+      Class: rviz_default_plugins/Grid
+      Color: 160; 160; 164
+      Enabled: true
+      Line Style:
+        Line Width: 0.029999999329447746
+        Value: Lines
+      Name: Grid
+      Normal Cell Count: 0
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Plane: XY
+      Plane Cell Count: 10
+      Reference Frame: <Fixed Frame>
+      Value: true
+    - Alpha: 1
+      Class: rviz_default_plugins/RobotModel
+      Collision Enabled: false
+      Description File: ""
+      Description Source: Topic
+      Description Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /robot_description
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        left_J1_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        left_J2_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        left_J3_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        left_J4_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        left_J5_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        left_J6_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        left_base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        left_camera_bottom_screw_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        left_camera_color_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        left_camera_color_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        left_camera_depth_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        left_camera_depth_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        left_camera_infra1_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        left_camera_infra1_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        left_camera_infra2_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        left_camera_infra2_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        left_camera_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        left_end_effector_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        left_end_effector_origin:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        left_flange:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        left_linear_axis_carrier_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        left_linear_axis_carrier_mount:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        left_linear_axis_origin:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        left_linear_axis_rail_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        left_tcp:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        right_J1_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        right_J2_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        right_J3_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        right_J4_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        right_J5_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        right_J6_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        right_base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        right_camera_bottom_screw_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        right_camera_color_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        right_camera_color_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        right_camera_depth_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        right_camera_depth_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        right_camera_infra1_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        right_camera_infra1_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        right_camera_infra2_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        right_camera_infra2_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        right_camera_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        right_end_effector_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        right_end_effector_origin:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        right_flange:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        right_linear_axis_carrier_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        right_linear_axis_carrier_mount:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        right_linear_axis_origin:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        right_linear_axis_rail_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        right_tcp:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        world:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+      Mass Properties:
+        Inertia: false
+        Mass: false
+      Name: RobotModel
+      TF Prefix: ""
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
+    - Class: rviz_default_plugins/TF
+      Enabled: true
+      Filter (blacklist): ""
+      Filter (whitelist): ""
+      Frame Timeout: 15
+      Frames:
+        All Enabled: false
+        base_link:
+          Value: true
+        left_J1_link:
+          Value: false
+        left_J2_link:
+          Value: false
+        left_J3_link:
+          Value: false
+        left_J4_link:
+          Value: false
+        left_J5_link:
+          Value: false
+        left_J6_link:
+          Value: false
+        left_base_link:
+          Value: false
+        left_camera_bottom_screw_frame:
+          Value: false
+        left_camera_color_frame:
+          Value: false
+        left_camera_color_optical_frame:
+          Value: false
+        left_camera_depth_frame:
+          Value: false
+        left_camera_depth_optical_frame:
+          Value: false
+        left_camera_infra1_frame:
+          Value: false
+        left_camera_infra1_optical_frame:
+          Value: false
+        left_camera_infra2_frame:
+          Value: false
+        left_camera_infra2_optical_frame:
+          Value: false
+        left_camera_link:
+          Value: true
+        left_end_effector_link:
+          Value: false
+        left_end_effector_origin:
+          Value: false
+        left_flange:
+          Value: true
+        left_linear_axis_carrier_link:
+          Value: false
+        left_linear_axis_carrier_mount:
+          Value: false
+        left_linear_axis_origin:
+          Value: false
+        left_linear_axis_rail_link:
+          Value: false
+        left_tcp:
+          Value: true
+        right_J1_link:
+          Value: false
+        right_J2_link:
+          Value: false
+        right_J3_link:
+          Value: false
+        right_J4_link:
+          Value: false
+        right_J5_link:
+          Value: false
+        right_J6_link:
+          Value: false
+        right_base_link:
+          Value: false
+        right_camera_bottom_screw_frame:
+          Value: false
+        right_camera_color_frame:
+          Value: false
+        right_camera_color_optical_frame:
+          Value: false
+        right_camera_depth_frame:
+          Value: false
+        right_camera_depth_optical_frame:
+          Value: false
+        right_camera_infra1_frame:
+          Value: false
+        right_camera_infra1_optical_frame:
+          Value: false
+        right_camera_infra2_frame:
+          Value: false
+        right_camera_infra2_optical_frame:
+          Value: false
+        right_camera_link:
+          Value: true
+        right_end_effector_link:
+          Value: false
+        right_end_effector_origin:
+          Value: false
+        right_flange:
+          Value: true
+        right_linear_axis_carrier_link:
+          Value: false
+        right_linear_axis_carrier_mount:
+          Value: false
+        right_linear_axis_origin:
+          Value: false
+        right_linear_axis_rail_link:
+          Value: false
+        right_tcp:
+          Value: true
+        world:
+          Value: false
+      Marker Scale: 1
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+      Tree:
+        world:
+          base_link:
+            left_linear_axis_origin:
+              left_linear_axis_rail_link:
+                left_linear_axis_carrier_link:
+                  left_linear_axis_carrier_mount:
+                    left_base_link:
+                      left_J1_link:
+                        left_J2_link:
+                          left_J3_link:
+                            left_J4_link:
+                              left_J5_link:
+                                left_J6_link:
+                                  left_flange:
+                                    left_camera_bottom_screw_frame:
+                                      left_camera_link:
+                                        left_camera_color_frame:
+                                          left_camera_color_optical_frame:
+                                            {}
+                                        left_camera_depth_frame:
+                                          left_camera_depth_optical_frame:
+                                            {}
+                                        left_camera_infra1_frame:
+                                          left_camera_infra1_optical_frame:
+                                            {}
+                                        left_camera_infra2_frame:
+                                          left_camera_infra2_optical_frame:
+                                            {}
+                                    left_end_effector_origin:
+                                      left_end_effector_link:
+                                        left_tcp:
+                                          {}
+            right_linear_axis_origin:
+              right_linear_axis_rail_link:
+                right_linear_axis_carrier_link:
+                  right_linear_axis_carrier_mount:
+                    right_base_link:
+                      right_J1_link:
+                        right_J2_link:
+                          right_J3_link:
+                            right_J4_link:
+                              right_J5_link:
+                                right_J6_link:
+                                  right_flange:
+                                    right_camera_bottom_screw_frame:
+                                      right_camera_link:
+                                        right_camera_color_frame:
+                                          right_camera_color_optical_frame:
+                                            {}
+                                        right_camera_depth_frame:
+                                          right_camera_depth_optical_frame:
+                                            {}
+                                        right_camera_infra1_frame:
+                                          right_camera_infra1_optical_frame:
+                                            {}
+                                        right_camera_infra2_frame:
+                                          right_camera_infra2_optical_frame:
+                                            {}
+                                    right_end_effector_origin:
+                                      right_end_effector_link:
+                                        right_tcp:
+                                          {}
+      Update Interval: 0
+      Value: true
+  Enabled: true
+  Global Options:
+    Background Color: 48; 48; 48
+    Fixed Frame: world
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz_default_plugins/Interact
+      Hide Inactive Objects: true
+  Transformation:
+    Current:
+      Class: rviz_default_plugins/TF
+  Value: true
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Distance: 6.6078057289123535
+      Enable Stereo Rendering:
+        Stereo Eye Separation: 0.05999999865889549
+        Stereo Focal Distance: 1
+        Swap Stereo Eyes: false
+        Value: false
+      Focal Point:
+        X: 1.3450255393981934
+        Y: -0.02629898488521576
+        Z: 1.2429943084716797
+      Focal Shape Fixed Size: false
+      Focal Shape Size: 0.05000000074505806
+      Invert Z Axis: false
+      Name: Current View
+      Near Clip Distance: 0.009999999776482582
+      Pitch: 0.5853997468948364
+      Target Frame: <Fixed Frame>
+      Value: Orbit (rviz_default_plugins)
+      Yaw: 0.9903866052627563
+    Saved: ~
+Window Geometry:
+  Displays:
+    collapsed: false
+  Height: 823
+  Hide Left Dock: false
+  Hide Right Dock: false
+  QMainWindow State: 000000ff00000000fd000000020000000000000156000002e1fc0200000001fb000000100044006900730070006c006100790073010000003b000002e1000000c700ffffff0000000100000100000002e1fc0200000001fb0000000a00560069006500770073010000003b000002e1000000a000ffffff00000433000002e100000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Views:
+    collapsed: false
+  Width: 1685
+  X: 402
+  Y: 256

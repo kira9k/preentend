@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro">
+    <xacro:include filename="$(find preentend_description)/urdf/common/materials.xacro" />
+
+    <xacro:macro name="robot"
+        params="prefix:='' 
+        linear_axis_model:='mock' robot_model:='m20_12_23d' end_effector_model:='mock' camera_model:='realsense'
+        parent *origin 
+        use_gazebo:='false' use_ros2_control:='false' hardware_plugin:='mock_components/GenericSystem'">
+
+        <xacro:include
+            filename="$(find preentend_description)/urdf/linear_axis/${linear_axis_model}_macro.xacro" />
+
+        <xacro:linear_axis prefix="${prefix}" parent="${parent}" use_gazebo="${use_gazebo}"
+            use_ros2_control="${use_ros2_control}" hardware_plugin="${hardware_plugin}">
+            <xacro:insert_block name="origin" />
+        </xacro:linear_axis>
+
+        <xacro:include
+            filename="$(find preentend_description)/urdf/robot/${robot_model}_macro.xacro" />
+        <xacro:robot_arm prefix="${prefix}" parent="${prefix}linear_axis_carrier_mount"
+            use_gazebo="${use_gazebo}"
+            use_ros2_control="${use_ros2_control}" hardware_plugin="${hardware_plugin}">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </xacro:robot_arm>
+
+        <xacro:include
+            filename="$(find preentend_description)/urdf/end_effector/${end_effector_model}_macro.xacro" />
+        <xacro:end_effector prefix="${prefix}" parent="${prefix}flange" use_gazebo="${use_gazebo}">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </xacro:end_effector>
+
+        <xacro:include
+            filename="$(find preentend_description)/urdf/camera/${camera_model}_macro.xacro" />
+        <xacro:camera prefix="${prefix}" parent="${prefix}flange" use_gazebo="${use_gazebo}">
+            <origin xyz="0.226 0 0.431" rpy="0 0 0" />
+        </xacro:camera>
+
+    </xacro:macro>
+</robot>

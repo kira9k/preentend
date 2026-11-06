@@ -1,0 +1,103 @@
+<?xml version="1.0"?>
+<!--
+Intel RealSense D435 in its aluminum case. Dimensions and frame layout follow
+realsense2_description (_d435.urdf.xacro), so TF matches the realsense2_camera driver.
+-->
+<robot xmlns:xacro="http://wiki.ros.org/xacro">
+    <xacro:macro name="camera"
+        params="prefix:=''
+        parent *origin
+        use_gazebo:='false' enable_infra:='false'">
+        <xacro:if value="${use_gazebo}">
+            <xacro:include
+                filename="$(find preentend_description)/urdf/camera/realsense.gazebo.xacro" />
+            <xacro:camera_gazebo prefix="${prefix}" enable_infra="${enable_infra}" />
+        </xacro:if>
+
+        <!-- case -->
+        <xacro:property name="cam_width" value="0.090" />
+        <xacro:property name="cam_height" value="0.025" />
+        <xacro:property name="cam_depth" value="0.02505" />
+        <xacro:property name="cam_mass" value="0.072" />
+        <!-- tripod mount screw is offset from the case center -->
+        <xacro:property name="cam_mount_from_center_offset" value="0.0149" />
+        <!-- glass cover is 0.1 mm inwards from the front plate -->
+        <xacro:property name="cam_glass_to_front" value="0.1e-3" />
+        <!-- zero depth plane is 4.2 mm behind the glass (datasheet rev 007, fig. 4-4) -->
+        <xacro:property name="cam_zero_depth_to_glass" value="4.2e-3" />
+        <xacro:property name="cam_link_x_offset"
+            value="${cam_mount_from_center_offset - cam_glass_to_front - cam_zero_depth_to_glass}" />
+        <!-- depth origin (left imager) relative to the case center -->
+        <xacro:property name="cam_depth_py" value="0.0175" />
+        <xacro:property name="cam_depth_pz" value="${cam_height / 2}" />
+
+        <!-- sensor offsets along y from the depth origin -->
+        <xacro:property name="cam_depth_to_infra1_offset" value="0.0" />
+        <xacro:property name="cam_depth_to_infra2_offset" value="-0.050" />
+        <xacro:property name="cam_depth_to_color_offset" value="0.015" />
+
+        <link name="${prefix}camera_bottom_screw_frame" />
+        <joint name="${prefix}camera_origin_joint" type="fixed">
+            <xacro:insert_block name="origin" />
+            <parent link="${parent}" />
+            <child link="${prefix}camera_bottom_screw_frame" />
+        </joint>
+
+        <!-- camera_link sits at the depth origin, on the zero depth plane -->
+        <link name="${prefix}camera_link">
+            <inertial>
+                <mass value="${cam_mass}" />
+                <origin xyz="${cam_zero_depth_to_glass + cam_glass_to_front - cam_depth / 2} ${-cam_depth_py} 0"
+                    rpy="0 0 0" />
+                <inertia ixx="${cam_mass * (cam_width ** 2 + cam_height ** 2) / 12}" ixy="0" ixz="0"
+                    iyy="${cam_mass * (cam_depth ** 2 + cam_height ** 2) / 12}" iyz="0"
+                    izz="${cam_mass * (cam_depth ** 2 + cam_width ** 2) / 12}" />
+            </inertial>
+            <visual>
+                <origin xyz="${cam_zero_depth_to_glass + cam_glass_to_front - cam_depth / 2} ${-cam_depth_py} 0"
+                    rpy="0 0 0" />
+                <geometry>
+                    <box size="${cam_depth} ${cam_width} ${cam_height}" />
+                </geometry>
+                <material name="light_gray" />
+            </visual>
+            <collision>
+                <origin xyz="${cam_zero_depth_to_glass + cam_glass_to_front - cam_depth / 2} ${-cam_depth_py} 0"
+                    rpy="0 0 0" />
+                <geometry>
+                    <box size="${cam_depth} ${cam_width} ${cam_height}" />
+                </geometry>
+            </collision>
+        </link>
+        <joint name="${prefix}camera_link_joint" type="fixed">
+            <origin xyz="${cam_link_x_offset} ${cam_depth_py} ${cam_depth_pz}" rpy="0 0 0" />
+            <parent link="${prefix}camera_bottom_screw_frame" />
+            <child link="${prefix}camera_link" />
+        </joint>
+
+        <xacro:camera_sensor_frames prefix="${prefix}" sensor="depth" offset="0" />
+        <xacro:camera_sensor_frames prefix="${prefix}" sensor="infra1"
+            offset="${cam_depth_to_infra1_offset}" />
+        <xacro:camera_sensor_frames prefix="${prefix}" sensor="infra2"
+            offset="${cam_depth_to_infra2_offset}" />
+        <xacro:camera_sensor_frames prefix="${prefix}" sensor="color"
+            offset="${cam_depth_to_color_offset}" />
+    </xacro:macro>
+
+    <!-- <sensor>_frame is x forward, z up; <sensor>_optical_frame is z forward, x right, y down -->
+    <xacro:macro name="camera_sensor_frames" params="prefix sensor offset">
+        <link name="${prefix}camera_${sensor}_frame" />
+        <joint name="${prefix}camera_${sensor}_joint" type="fixed">
+            <origin xyz="0 ${offset} 0" rpy="0 0 0" />
+            <parent link="${prefix}camera_link" />
+            <child link="${prefix}camera_${sensor}_frame" />
+        </joint>
+
+        <link name="${prefix}camera_${sensor}_optical_frame" />
+        <joint name="${prefix}camera_${sensor}_optical_joint" type="fixed">
+            <origin xyz="0 0 0" rpy="${-pi / 2} 0 ${-pi / 2}" />
+            <parent link="${prefix}camera_${sensor}_frame" />
+            <child link="${prefix}camera_${sensor}_optical_frame" />
+        </joint>
+    </xacro:macro>
+</robot>

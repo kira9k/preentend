@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+    <xacro:macro name="m20_12_23d_gazebo_reference" params="prefix link">
+        <gazebo reference="${prefix}${link}">
+            <selfCollide>true</selfCollide>
+        </gazebo>
+    </xacro:macro>
+
+    <xacro:macro name="m20_12_23d_gazebo" params="prefix">
+        <xacro:m20_12_23d_gazebo_reference prefix="${prefix}" link="J1_link" />
+        <xacro:m20_12_23d_gazebo_reference prefix="${prefix}" link="J2_link" />
+        <xacro:m20_12_23d_gazebo_reference prefix="${prefix}" link="J3_link" />
+        <xacro:m20_12_23d_gazebo_reference prefix="${prefix}" link="J4_link" />
+        <xacro:m20_12_23d_gazebo_reference prefix="${prefix}" link="J5_link" />
+        <xacro:m20_12_23d_gazebo_reference prefix="${prefix}" link="J6_link" />
+    </xacro:macro>
+
+</robot>

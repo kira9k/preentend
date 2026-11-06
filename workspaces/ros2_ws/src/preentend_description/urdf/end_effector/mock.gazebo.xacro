@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <xacro:macro name="end_effector_gazebo" params="prefix">
+
+        <gazebo reference="${prefix}end_effector_link">
+            <selfCollide>true</selfCollide>
+        </gazebo>
+
+    </xacro:macro>
+
+</robot>

@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro">
+    <xacro:macro name="linear_axis_ros2_control"
+        params="prefix:='' hardware_plugin:='mock_components/GenericSystem'">
+        <ros2_control name="${prefix}linear_axis" type="system">
+            <hardware>
+                <plugin>${hardware_plugin}</plugin>
+            </hardware>
+            <joint name="${prefix}linear_axis_joint">
+                <command_interface name="position" />
+                <command_interface name="velocity" />
+                <state_interface name="position">
+                    <param name="initial_value">0.0</param>
+                </state_interface>
+                <state_interface name="velocity" />
+                <state_interface name="effort" />
+            </joint>
+        </ros2_control>
+    </xacro:macro>
+</robot>

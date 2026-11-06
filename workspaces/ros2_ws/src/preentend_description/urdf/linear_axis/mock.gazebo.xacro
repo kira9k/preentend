@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <xacro:macro name="linear_axis_gazebo" params="prefix">
+
+        <gazebo reference="${prefix}linear_axis_rail_link">
+            <selfCollide>true</selfCollide>
+        </gazebo>
+
+        <gazebo reference="${prefix}linear_axis_carrier_link">
+            <selfCollide>true</selfCollide>
+        </gazebo>
+
+    </xacro:macro>
+
+</robot>

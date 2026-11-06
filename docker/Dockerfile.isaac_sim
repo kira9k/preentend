@@ -1,6 +1,4 @@
 FROM nvcr.io/nvidia/isaac-sim:6.0.1
 
-ENV ACCEPT_EULA=Y
-
 ENTRYPOINT [""]
 CMD ["/bin/bash"]

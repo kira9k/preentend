@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro">
+    <xacro:macro name="robot_arm"
+        params="prefix:='' parent *origin use_gazebo:='false' use_ros2_control:='false' hardware_plugin:='mock_components/GenericSystem'">
+
+        <xacro:include filename="$(find preentend_description)/urdf/robot/m20_12_23d.urdf.xacro" />
+        <xacro:m20_12_23d prefix="${prefix}" parent="${parent}">
+            <xacro:insert_block name="origin" />
+        </xacro:m20_12_23d>
+
+        <xacro:if value="${use_gazebo}">
+            <xacro:include
+                filename="$(find preentend_description)/urdf/robot/m20_12_23d.gazebo.xacro" />
+            <xacro:m20_12_23d_gazebo prefix="${prefix}" />
+        </xacro:if>
+
+        <xacro:if value="${use_ros2_control}">
+            <xacro:include
+                filename="$(find preentend_description)/urdf/robot/m20_12_23d.transmission.xacro" />
+            <xacro:m20_12_23d_transmissions prefix="${prefix}" />
+
+            <xacro:include
+                filename="$(find preentend_description)/urdf/robot/m20_12_23d.ros2_control.xacro" />
+            <xacro:m20_12_23d_ros2_control prefix="${prefix}" hardware_plugin="${hardware_plugin}" />
+        </xacro:if>
+    </xacro:macro>
+</robot>

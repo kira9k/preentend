@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro">
+    <xacro:macro name="end_effector"
+        params="prefix:='' 
+        parent *origin 
+        use_gazebo:='false'">
+        <xacro:if value="${use_gazebo}">
+            <xacro:include
+                filename="$(find preentend_description)/urdf/end_effector/mock.gazebo.xacro" />
+            <xacro:end_effector_gazebo prefix="${prefix}" />
+        </xacro:if>
+
+        <link name="${prefix}end_effector_origin" />
+        <joint name="${prefix}end_effector_origin_joint" type="fixed">
+            <xacro:insert_block name="origin" />
+            <parent link="${parent}" />
+            <child link="${prefix}end_effector_origin" />
+        </joint>
+
+        <link name="${prefix}end_effector_link">
+            <inertial>
+                <mass value="2.20106559" />
+                <origin xyz="0.138 0.012 0.113" rpy="0 0 0" />
+                <inertia
+                    ixx="0.06277067085" ixy="-0.00075440405" ixz="-0.00840932268"
+                    iyy="0.06315719744" iyz="-0.001276814"
+                    izz="0.01607187226" />
+            </inertial>
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh
+                        filename="package://preentend_description/meshes/mock_end_effector/visual/end_effector.stl" />
+                </geometry>
+                <material name="gray" />
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh
+                        filename="package://preentend_description/meshes/mock_end_effector/collision/end_effector.stl" />
+                </geometry>
+            </collision>
+        </link>
+        <joint name="${prefix}end_effector_joint" type="fixed">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <parent link="${prefix}end_effector_origin" />
+            <child link="${prefix}end_effector_link" />
+        </joint>
+
+        <link name="${prefix}tcp" />
+        <joint name="${prefix}tcp_joint" type="fixed">
+            <origin xyz="0.236 0 0.155" rpy="0 0 0" />
+            <parent link="${prefix}end_effector_link" />
+            <child link="${prefix}tcp" />
+        </joint>
+    </xacro:macro>
+</robot>

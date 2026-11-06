@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<robot name="preentend" xmlns:xacro="http://wiki.ros.org/xacro">
+  <xacro:arg name="separation" default="3.5" />
+  <xacro:property name="separation" value="$(arg separation)" />
+
+  <xacro:arg name="use_gazebo" default="false" />
+  <xacro:arg name="use_ros2_control" default="false" />
+  <xacro:arg name="hardware_plugin" default="mock_components/GenericSystem" />
+  <xacro:property name="hardware_plugin" value="$(arg hardware_plugin)" />
+
+  <xacro:include filename="$(find preentend_description)/urdf/robot_macro.xacro" />
+
+  <link name="world" />
+
+  <link name="base_link" />
+  <joint name="base_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="world" />
+    <child link="base_link" />
+  </joint>
+
+  <!-- Left Robot -->
+  <xacro:robot prefix="left_" parent="base_link" use_gazebo="$(arg use_gazebo)"
+    use_ros2_control="$(arg use_ros2_control)" hardware_plugin="$(arg hardware_plugin)">
+    <origin xyz="0 ${separation/2} 0" rpy="0 0 0" />
+  </xacro:robot>
+
+  <!-- Right Robot -->
+  <xacro:robot prefix="right_" parent="base_link" use_gazebo="$(arg use_gazebo)"
+    use_ros2_control="$(arg use_ros2_control)" hardware_plugin="$(arg hardware_plugin)">
+    <origin xyz="0 ${-separation/2} 0" rpy="0 0 0" />
+  </xacro:robot>
+
+  <xacro:if value="$(arg use_gazebo)">
+    <xacro:if value="${hardware_plugin == 'gz_ros2_control/GazeboSimSystem'}">
+      <xacro:if value="$(arg use_ros2_control)">
+        <gazebo>
+          <plugin filename="libgz_ros2_control-system.so"
+            name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+            <parameters>$(find preentend_controller)/config/ros2_controllers.yaml</parameters>
+          </plugin>
+        </gazebo>
+      </xacro:if>
+    </xacro:if>
+  </xacro:if>
+
+</robot>

@@ -1,0 +1,115 @@
+<?xml version="1.0"?>
+<!--
+D435 sensors per the Intel RealSense D400 datasheet:
+  depth / infra:  up to 1280x720 @ 30 fps, FOV 87 x 58 deg, Min-Z 0.28 m at max resolution, range ~10 m
+  color (OV2740): up to 1920x1080 @ 30 fps, FOV 69 x 42 deg
+  stereo baseline 50 mm
+Streams use 16:9 profiles (so the FOV above holds) at realsense2_camera's default sizes,
+and infra is off by default like in the driver: every camera here is rendered on each
+sensor update and slows the simulation down.
+Topics follow realsense2_camera naming. Requires the gz::sim::systems::Sensors world plugin.
+-->
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+    <xacro:property name="cam_depth_hfov" value="${radians(87)}" />
+    <xacro:property name="cam_color_hfov" value="${radians(69)}" />
+    <xacro:property name="cam_depth_width" value="848" />
+    <xacro:property name="cam_depth_height" value="480" />
+    <xacro:property name="cam_color_width" value="1280" />
+    <xacro:property name="cam_color_height" value="720" />
+    <xacro:property name="fps" value="15"/>
+
+    <xacro:macro name="camera_ir_sensor" params="prefix sensor">
+        <gazebo reference="${prefix}camera_${sensor}_frame">
+            <sensor name="${prefix}camera_${sensor}" type="camera">
+                <gz_frame_id>${prefix}camera_${sensor}_optical_frame</gz_frame_id>
+                <camera name="${prefix}camera_${sensor}">
+                    <horizontal_fov>${cam_depth_hfov}</horizontal_fov>
+                    <image>
+                        <width>${cam_depth_width}</width>
+                        <height>${cam_depth_height}</height>
+                        <format>L8</format>
+                    </image>
+                    <clip>
+                        <near>0.1</near>
+                        <far>100</far>
+                    </clip>
+                    <noise>
+                        <type>gaussian</type>
+                        <mean>0.0</mean>
+                        <stddev>0.007</stddev>
+                    </noise>
+                    <camera_info_topic>${prefix}camera/${sensor}/camera_info</camera_info_topic>
+                </camera>
+                <always_on>1</always_on>
+                <update_rate>${fps}</update_rate>
+                <visualize>false</visualize>
+                <topic>${prefix}camera/${sensor}/image_rect_raw</topic>
+            </sensor>
+        </gazebo>
+    </xacro:macro>
+
+    <xacro:macro name="camera_gazebo" params="prefix enable_infra:='false'">
+        <!-- publishes <topic> (32FC1, meters) and <topic>/points -->
+        <gazebo reference="${prefix}camera_depth_frame">
+            <sensor name="${prefix}camera_depth" type="depth_camera">
+                <gz_frame_id>${prefix}camera_depth_optical_frame</gz_frame_id>
+                <camera name="${prefix}camera_depth">
+                    <horizontal_fov>${cam_depth_hfov}</horizontal_fov>
+                    <image>
+                        <width>${cam_depth_width}</width>
+                        <height>${cam_depth_height}</height>
+                        <format>R_FLOAT32</format>
+                    </image>
+                    <clip>
+                        <near>0.28</near>
+                        <far>10.0</far>
+                    </clip>
+                    <noise>
+                        <!-- datasheet: RMS error < 2% at 2 m -->
+                        <type>gaussian</type>
+                        <mean>0.0</mean>
+                        <stddev>0.01</stddev>
+                    </noise>
+                    <camera_info_topic>${prefix}camera/depth/camera_info</camera_info_topic>
+                </camera>
+                <always_on>1</always_on>
+                <update_rate>${fps}</update_rate>
+                <visualize>false</visualize>
+                <topic>${prefix}camera/depth/image_rect_raw</topic>
+            </sensor>
+        </gazebo>
+
+        <gazebo reference="${prefix}camera_color_frame">
+            <sensor name="${prefix}camera_color" type="camera">
+                <gz_frame_id>${prefix}camera_color_optical_frame</gz_frame_id>
+                <camera name="${prefix}camera_color">
+                    <horizontal_fov>${cam_color_hfov}</horizontal_fov>
+                    <image>
+                        <width>${cam_color_width}</width>
+                        <height>${cam_color_height}</height>
+                        <format>R8G8B8</format>
+                    </image>
+                    <clip>
+                        <near>0.1</near>
+                        <far>100</far>
+                    </clip>
+                    <noise>
+                        <type>gaussian</type>
+                        <mean>0.0</mean>
+                        <stddev>0.007</stddev>
+                    </noise>
+                    <camera_info_topic>${prefix}camera/color/camera_info</camera_info_topic>
+                </camera>
+                <always_on>1</always_on>
+                <update_rate>${fps}</update_rate>
+                <visualize>false</visualize>
+                <topic>${prefix}camera/color/image_raw</topic>
+            </sensor>
+        </gazebo>
+
+        <xacro:if value="${enable_infra}">
+            <xacro:camera_ir_sensor prefix="${prefix}" sensor="infra1" />
+            <xacro:camera_ir_sensor prefix="${prefix}" sensor="infra2" />
+        </xacro:if>
+    </xacro:macro>
+</robot>
