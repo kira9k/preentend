@@ -3,4 +3,9 @@ install/
 log/
 __pycache__
 camera_output
-workspaces/isaac_sim_ws/camera_commands/*
+workspaces/isaac_sim_ws/camera_commands
+workspaces/isaac_sim_ws/test_data_2_cameras
+*.stl
+workspaces/isaac_sim_ws/stages/LADA_2107_ASSEMBLY.STL
+workspaces/isaac_sim_ws/stages/LADA_2107_ASSEMBLY.usd
+workspaces/isaac_sim_ws/stages/test_3_cameras.usd
