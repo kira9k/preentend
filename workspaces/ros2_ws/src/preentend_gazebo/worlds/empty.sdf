@@ -59,15 +59,25 @@
       <pose>0.5 0 0 0 0 0</pose>
       <static>true</static>
       <link name="body">
-        <!-- The complete Prius OBJ includes body, interior, windows and wheels. -->
+        <!-- Opaque body, interior and wheels. Glass is a separate visual below. -->
         <visual name="body_visual">
           <pose>0 0 0 0 0 1.57079632679</pose>
           <geometry>
             <mesh>
-              <uri>model://preentend_gazebo/models/prius_hybrid/meshes/Hybrid.obj</uri>
+              <uri>model://preentend_gazebo/models/prius_hybrid/meshes/Hybrid_body.obj</uri>
               <scale>0.01 0.01 0.01</scale>
             </mesh>
           </geometry>
+        </visual>
+        <visual name="windows_visual">
+          <pose>0 0 0 0 0 1.57079632679</pose>
+          <geometry>
+            <mesh>
+              <uri>model://preentend_gazebo/models/prius_hybrid/meshes/Hybrid_windows.obj</uri>
+              <scale>0.01 0.01 0.01</scale>
+            </mesh>
+          </geometry>
+          <transparency>0.55</transparency>
         </visual>
         <!-- Same conservative box as in the MoveIt planning scene. -->
         <collision name="body_collision">

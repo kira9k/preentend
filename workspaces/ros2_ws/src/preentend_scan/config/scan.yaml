@@ -5,17 +5,28 @@ settle_seconds: 0.7
 cloud_timeout_seconds: 12.0
 velocity_scaling: 1.0
 acceleration_scaling: 1.0
-point_stride: 4
-voxel_size: 0.02
+point_stride: 2
+voxel_size: 0.01
+vehicle_min_z: 0.025
+cluster_voxel_size: 0.06
+min_cluster_points: 100
+min_cluster_fraction: 0.01
+# Require four nearby returns within 3 cm to reject isolated floor noise.
+outlier_radius: 0.03
+outlier_neighbors: 4
+# Estimated exterior points fill sampling seams and enclosed glass/roof gaps.
+completion_spacing: 0.015
+completion_min_distance: 0.012
 
 # Broad workcell ROI. Adjust only if the vehicle extends outside these bounds.
 # [xmin, xmax, ymin, ymax, zmin, zmax] in world coordinates, metres.
-scan_bounds: [-3.0, 3.0, -1.4, 1.4, 0.05, 2.5]
+scan_bounds: [-3.0, 3.0, -1.4, 1.4, 0.01, 2.5]
 
-# Camera heights are approximately 1.7, 1.5, 1.3 and 0.8 m at rail zero.
+# Camera heights are approximately 1.7, 1.5, 1.3, 0.8 and 0.6 m at rail zero.
 # J1 stays close to zero, so each arm mainly runs along its own rail.
 # The wrist turns the depth camera toward the space between the rails.
 # The bottom camera pose is pitched down to see sills and wheels.
+# The wheel pose sits farther outside the car and looks down at the full wheel.
 levels:
   - name: upper
     left: [0.011817991, -0.442911794, -0.969384327, -1.576734921, 1.581013901, 1.044293491]
@@ -29,3 +40,6 @@ levels:
   - name: bottom
     left: [0.244318905, 0.269405522, -1.340134423, -1.805318841, 1.311607477, -0.038892163]
     right: [-0.224628036, 0.284906112, -1.304451171, 1.790761965, 1.316704062, 0.018694920]
+  - name: wheel
+    left: [0.855546784, 0.747610976, -0.910112786, -2.409618247, 1.255626060, -0.059922993]
+    right: [-0.855546784, 0.747610976, -0.910112786, 2.409618247, 1.255626060, 0.059922993]

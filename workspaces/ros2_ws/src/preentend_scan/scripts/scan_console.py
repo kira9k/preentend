@@ -10,6 +10,8 @@ from pathlib import Path
 import numpy as np
 import rclpy
 import yaml
+from scipy import ndimage
+from scipy.spatial import cKDTree
 from control_msgs.action import FollowJointTrajectory
 from moveit_msgs.action import MoveGroup
 from moveit_msgs.msg import (
@@ -32,10 +34,11 @@ from rclpy.action import ActionClient
 from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
-from rclpy.qos import qos_profile_sensor_data
+from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy, qos_profile_sensor_data
 from rclpy.time import Time
 from sensor_msgs.msg import PointCloud2
 from sensor_msgs_py import point_cloud2
+from std_msgs.msg import Header
 from std_srvs.srv import Trigger
 from tf2_ros import Buffer, TransformListener
 
@@ -67,6 +70,162 @@ def rotation_matrix(quaternion):
     )
 
 
+def filter_vehicle(points, min_z, cluster_voxel_size, min_cluster_points, min_cluster_fraction):
+    """Keep substantial vehicle surfaces after removing floor and sparse returns."""
+    points = np.asarray(points, dtype=np.float32).reshape(-1, 3)
+    points = points[np.isfinite(points).all(axis=1) & (points[:, 2] >= min_z)]
+    if not len(points):
+        return points
+    cells = np.floor((points - points.min(axis=0)) / cluster_voxel_size).astype(np.int32)
+    occupied = np.zeros(tuple(cells.max(axis=0) + 1), dtype=bool)
+    occupied[cells[:, 0], cells[:, 1], cells[:, 2]] = True
+    neighbors = np.ones((3, 3, 3), dtype=bool)
+    joined = ndimage.binary_dilation(occupied, structure=neighbors)
+    labels, count = ndimage.label(joined, structure=neighbors)
+    if count == 0:
+        return points[:0]
+    point_labels = labels[cells[:, 0], cells[:, 1], cells[:, 2]]
+    sizes = np.bincount(point_labels, minlength=count + 1)
+    sizes[0] = 0
+    largest = int(sizes.max())
+    threshold = min(largest, max(min_cluster_points, int(largest * min_cluster_fraction)))
+    keep = (sizes >= threshold) & (np.arange(len(sizes)) != 0)
+    return points[keep[point_labels]]
+
+
+def remove_sparse_points(points, radius, neighbors):
+    """Discard isolated depth returns without eroding connected wheel surfaces."""
+    if len(points) < neighbors:
+        return points[:0]
+    distances, _ = cKDTree(points).query(
+        points, k=neighbors, distance_upper_bound=radius, workers=-1
+    )
+    return points[np.isfinite(distances[:, -1])]
+
+
+def complete_projection(points, axes, normal_axis, outer_sign, spacing, lower_gap,
+                        upper_gap, upper_threshold, min_distance, fill_upper_silhouette=False):
+    """Fill enclosed gaps on one measured exterior envelope, in a 2D view."""
+    coordinates = points[:, axes]
+    origin = coordinates.min(axis=0)
+    cells = np.floor((coordinates - origin) / spacing).astype(np.int32)
+    shape = tuple(cells.max(axis=0) + 1)
+    occupied = np.zeros(shape, dtype=bool)
+    occupied[cells[:, 0], cells[:, 1]] = True
+    envelope = np.full(shape, -np.inf, dtype=np.float32)
+    np.maximum.at(envelope, (cells[:, 0], cells[:, 1]), points[:, normal_axis] * outer_sign)
+
+    # A small closing bridges sampling seams; enclosed upper holes include glass.
+    closed = ndimage.binary_closing(occupied, structure=np.ones((5, 5), dtype=bool))
+    upper = origin[1] + (np.arange(shape[1]) + 0.5) * spacing >= upper_threshold
+    target = closed | (ndimage.binary_fill_holes(closed) & upper[None, :])
+    if fill_upper_silhouette:
+        # Transparent windows can have no depth returns at all. Their holes
+        # need not be closed loops, so span from the measured door/hood to
+        # the measured roofline in each longitudinal column.
+        rows = np.arange(shape[1])[None, :]
+        highest = np.max(np.where(occupied, rows, -1), axis=1)
+        lowest = np.min(np.where(occupied, rows, shape[1]), axis=1)
+        has_both_edges = (lowest < shape[1]) & (
+            origin[1] + (highest + 0.5) * spacing > upper_threshold + 0.08
+        )
+        target |= has_both_edges[:, None] & upper[None, :] & (rows <= highest[:, None])
+    missing = np.argwhere(target & ~occupied)
+    if not len(missing):
+        return np.empty((0, 3), dtype=np.float32)
+    known = np.argwhere(occupied)
+    distances, nearest = cKDTree(known).query(missing, k=min(8, len(known)))
+    distances = np.atleast_2d(distances).reshape(len(missing), -1)
+    nearest = np.atleast_2d(nearest).reshape(len(missing), -1)
+    limit = np.where(upper[missing[:, 1]], upper_gap, lower_gap)
+    keep = distances[:, 0] * spacing <= limit
+    missing, distances, nearest = missing[keep], distances[keep], nearest[keep]
+    if not len(missing):
+        return np.empty((0, 3), dtype=np.float32)
+    weights = 1.0 / np.maximum(distances, 0.5) ** 2
+    values = envelope[known[nearest, 0], known[nearest, 1]]
+    normal = (weights * values).sum(axis=1) / weights.sum(axis=1)
+    result = np.zeros((len(missing), 3), dtype=np.float32)
+    result[:, axes] = origin + (missing + 0.5) * spacing
+    result[:, normal_axis] = outer_sign * normal
+    # Estimates are useful only where a measured point is genuinely missing.
+    separated = cKDTree(points).query(result, workers=-1)[0] >= min_distance
+    return result[separated]
+
+
+def approximate_side_glass(points, sign, spacing, min_distance, glass_start, top):
+    """Estimate an outer glass sheet from door tops and the roof edge."""
+    side = points[points[:, 1] * sign > 0.3 * np.quantile(np.abs(points[:, 1]), 0.95)]
+    if len(side) < 100:
+        return points[:0]
+    x0 = float(side[:, 0].min())
+    xbin = np.floor((side[:, 0] - x0) / spacing).astype(np.int32)
+    count = int(xbin.max()) + 1
+    highest = np.full(count, -np.inf, dtype=np.float32)
+    np.maximum.at(highest, xbin, side[:, 2])
+    valid = highest > 0.78 * top
+    if not valid.any():
+        return points[:0]
+    waist = np.full(count, -np.inf, dtype=np.float32)
+    roof_edge = np.full(count, -np.inf, dtype=np.float32)
+    waist_mask = (side[:, 2] >= glass_start) & (side[:, 2] <= glass_start + 0.15)
+    roof_mask = side[:, 2] >= highest[xbin] - 0.08
+    np.maximum.at(waist, xbin[waist_mask], side[waist_mask, 1] * sign)
+    np.maximum.at(roof_edge, xbin[roof_mask], side[roof_mask, 1] * sign)
+    columns = np.arange(count)
+    for profile in (waist, roof_edge):
+        known = np.isfinite(profile)
+        if not known.any():
+            return points[:0]
+        profile[~known] = np.interp(columns[~known], columns[known], profile[known])
+        profile[:] = ndimage.median_filter(profile, size=5)
+    x_columns = columns[valid]
+    z_rows = np.arange(int(np.ceil((top - glass_start) / spacing)) + 1)
+    xx, zz = np.meshgrid(x_columns, z_rows, indexing="ij")
+    zz = glass_start + zz * spacing
+    keep = zz < highest[xx] - 0.02
+    xx, zz = xx[keep], zz[keep]
+    fraction = np.clip((zz - glass_start) / np.maximum(highest[xx] - glass_start, spacing), 0, 1)
+    yy = sign * (waist[xx] * (1 - fraction) + roof_edge[xx] * fraction)
+    estimates = np.stack((x0 + (xx + 0.5) * spacing, yy, zz), axis=1).astype(np.float32)
+    return estimates[cKDTree(points).query(estimates, workers=-1)[0] >= min_distance]
+
+
+def reconstruct_surface(points, spacing, min_distance):
+    """Estimate missing side glass, small panel seams and roof patches."""
+    if not len(points):
+        return points[:0]
+    pieces = []
+    top = float(np.quantile(points[:, 2], 0.99))
+    glass_start = max(0.5, 0.42 * top)
+    side_limit = 0.48 * float(np.quantile(np.abs(points[:, 1]), 0.95))
+    for sign in (1, -1):
+        side = points[points[:, 1] * sign >= side_limit]
+        if len(side) > 100:
+            pieces.append(complete_projection(
+                side, (0, 2), 1, sign, spacing, 0.07, 0.8,
+                glass_start, min_distance, fill_upper_silhouette=True
+            ))
+            pieces.append(approximate_side_glass(
+                points, sign, spacing, min_distance, glass_start, top
+            ))
+    roof = points[points[:, 2] >= glass_start]
+    if len(roof) > 100:
+        # For the roof, the second projected coordinate is y, so all gaps
+        # receive the same conservative search radius.
+        pieces.append(complete_projection(
+            roof, (0, 1), 2, 1, spacing, 0.12, 0.12,
+            float("inf"), min_distance
+        ))
+    estimates = np.concatenate(pieces) if pieces else points[:0]
+    if not len(estimates):
+        return estimates
+    keys = np.floor(estimates / spacing).astype(np.int32)
+    _, unique = np.unique(keys, axis=0, return_index=True)
+    estimates = estimates[np.sort(unique)]
+    return estimates[cKDTree(points).query(estimates, workers=-1)[0] >= min_distance]
+
+
 class ScanNode(Node):
     def __init__(self):
         super().__init__("scan_console")
@@ -77,6 +236,22 @@ class ScanNode(Node):
             self.config = yaml.safe_load(stream)
         self.output_root = Path(self.get_parameter("output_root").value)
         self._validate_config()
+        self.car_publisher = self.create_publisher(
+            PointCloud2,
+            "/scan/car_points",
+            QoSProfile(
+                depth=1,
+                durability=DurabilityPolicy.TRANSIENT_LOCAL,
+                reliability=ReliabilityPolicy.RELIABLE,
+            ),
+        )
+        self.preview_publishers = {
+            side: self.create_publisher(
+                PointCloud2, f"/scan/{side}_preview", QoSProfile(depth=1)
+            )
+            for side in ("left", "right")
+        }
+        self._preview_last = {"left": 0.0, "right": 0.0}
 
         self.move_client = ActionClient(self, MoveGroup, "/move_action")
         self.controllers = {
@@ -117,6 +292,14 @@ class ScanNode(Node):
             raise ValueError("scan.yaml needs rail_positions and levels")
         if len(cfg["scan_bounds"]) != 6 or cfg["point_stride"] < 1:
             raise ValueError("scan_bounds must have six values and point_stride must be positive")
+        if cfg["cluster_voxel_size"] <= 0 or cfg["vehicle_min_z"] < 0:
+            raise ValueError("cluster_voxel_size must be positive and vehicle_min_z nonnegative")
+        if cfg["min_cluster_points"] < 1 or not 0 < cfg["min_cluster_fraction"] <= 1:
+            raise ValueError("min_cluster_points and min_cluster_fraction must be positive")
+        if cfg["outlier_radius"] <= 0 or cfg["outlier_neighbors"] < 2:
+            raise ValueError("outlier_radius must be positive and outlier_neighbors >= 2")
+        if cfg["completion_spacing"] <= 0 or cfg["completion_min_distance"] < 0:
+            raise ValueError("completion_spacing must be positive and completion_min_distance nonnegative")
         for position in cfg["rail_positions"]:
             if not -2.8 <= position <= 2.8:
                 raise ValueError(f"Rail position {position} is outside the ±2.8 m travel")
@@ -129,6 +312,16 @@ class ScanNode(Node):
             self._clouds[side] = message
             self._cloud_seq[side] += 1
             self._cloud_lock.notify_all()
+        now = time.monotonic()
+        if self._active and now - self._preview_last[side] >= 0.5:
+            self.preview_publishers[side].publish(message)
+            self._preview_last[side] = now
+
+    def _publish_car(self, points):
+        header = Header()
+        header.frame_id = "world"
+        header.stamp = self.get_clock().now().to_msg()
+        self.car_publisher.publish(point_cloud2.create_cloud_xyz32(header, points))
 
     def state(self):
         with self._state_lock:
@@ -152,6 +345,7 @@ class ScanNode(Node):
             self._phase = "Подключение к MoveIt…"
             self._output_path = ""
         self._cancel.clear()
+        self._publish_car(np.empty((0, 3), dtype=np.float32))
         self._worker = threading.Thread(target=self._run_scan, daemon=True)
         self._worker.start()
         return True, "Сканирование запущено"
@@ -194,15 +388,15 @@ class ScanNode(Node):
     def _joint_names(side):
         return [f"{side}_linear_axis_joint"] + [f"{side}_J{i}" for i in range(1, 7)]
 
-    def _move_goal(self, waypoints):
+    def _move_goal(self, waypoints, speed_factor=1.0):
         goal = MoveGroup.Goal()
         request = goal.request
         request.group_name = "dual_arm_camera"
         request.start_state.is_diff = True
         request.num_planning_attempts = 5
         request.allowed_planning_time = 10.0
-        request.max_velocity_scaling_factor = float(self.config["velocity_scaling"])
-        request.max_acceleration_scaling_factor = float(self.config["acceleration_scaling"])
+        request.max_velocity_scaling_factor = float(self.config["velocity_scaling"]) * speed_factor
+        request.max_acceleration_scaling_factor = float(self.config["acceleration_scaling"]) * speed_factor
         constraints = Constraints()
         for waypoint in waypoints:
             for joint, position in zip(
@@ -223,21 +417,29 @@ class ScanNode(Node):
         return goal
 
     def _move_pair(self, waypoints):
-        accepted = self._wait_future(
-            self.move_client.send_goal_async(self._move_goal(waypoints)), 15.0
-        )
-        if accepted is None or not accepted.accepted:
-            raise RuntimeError("MoveIt отклонил общую цель двух роботов")
-        with self._state_lock:
-            self._goal_handle = accepted
-        try:
-            result = self._wait_future(accepted.get_result_async(), 180.0)
-        finally:
+        for attempt in range(2):
+            accepted = self._wait_future(
+                self.move_client.send_goal_async(
+                    self._move_goal(waypoints, speed_factor=1.0 if attempt == 0 else 0.5)
+                ), 15.0
+            )
+            if accepted is None or not accepted.accepted:
+                raise RuntimeError("MoveIt отклонил общую цель двух роботов")
             with self._state_lock:
-                self._goal_handle = None
-        if result.result.error_code.val != MoveItErrorCodes.SUCCESS:
+                self._goal_handle = accepted
+            try:
+                result = self._wait_future(accepted.get_result_async(), 180.0)
+            finally:
+                with self._state_lock:
+                    self._goal_handle = None
+            code = result.result.error_code.val
+            if code == MoveItErrorCodes.SUCCESS:
+                return
+            if code == MoveItErrorCodes.CONTROL_FAILED and attempt == 0:
+                self.get_logger().warn("Контроллер не достиг цели; повтор с половинной скоростью")
+                continue
             raise RuntimeError(
-                f"MoveIt не выполнил общую цель: код {result.result.error_code.val}"
+                f"MoveIt не выполнил общую цель: код {code}"
             )
 
     def _fresh_cloud(self, side):
@@ -384,10 +586,37 @@ class ScanNode(Node):
             keys = np.floor(merged / voxel_size).astype(np.int32)
             _, unique = np.unique(keys, axis=0, return_index=True)
             merged = merged[np.sort(unique)]
-            save_ply(folder / "merged.ply", merged)
-            manifest["merged_points"] = int(len(merged))
+            save_ply(folder / "merged_raw.ply", merged)
+            measured = filter_vehicle(
+                merged,
+                float(self.config["vehicle_min_z"]),
+                float(self.config["cluster_voxel_size"]),
+                int(self.config["min_cluster_points"]),
+                float(self.config["min_cluster_fraction"]),
+            )
+            measured = remove_sparse_points(
+                measured,
+                float(self.config["outlier_radius"]),
+                int(self.config["outlier_neighbors"]),
+            )
+            if not len(measured):
+                raise RuntimeError("После фильтрации не осталось точек автомобиля")
+            save_ply(folder / "measured.ply", measured)
+            estimated = reconstruct_surface(
+                measured,
+                float(self.config["completion_spacing"]),
+                float(self.config["completion_min_distance"]),
+            )
+            save_ply(folder / "reconstructed_only.ply", estimated)
+            car_points = np.concatenate((measured, estimated))
+            save_ply(folder / "merged.ply", car_points)
+            manifest["raw_merged_points"] = int(len(merged))
+            manifest["measured_points"] = int(len(measured))
+            manifest["reconstructed_points"] = int(len(estimated))
+            manifest["merged_points"] = int(len(car_points))
+            self._publish_car(car_points)
             manifest["status"] = "complete"
-            self._set_state(phase=f"Готово: {len(merged)} точек, {folder}")
+            self._set_state(phase=f"Готово: {len(car_points)} точек автомобиля, {folder}")
         except InterruptedError:
             if manifest is not None:
                 manifest["status"] = "cancelled"
