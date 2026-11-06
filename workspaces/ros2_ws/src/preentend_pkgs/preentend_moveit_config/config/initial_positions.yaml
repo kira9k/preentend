@@ -1,0 +1,17 @@
+# Default initial positions for preentend's ros2_control fake system
+
+initial_positions:
+  robot1_fanuc_J1: 0
+  robot1_fanuc_J2: 0
+  robot1_fanuc_J3: 0
+  robot1_fanuc_J4: 0
+  robot1_fanuc_J5: 0
+  robot1_fanuc_J6: 0
+  robot1_lt_J1: 0
+  robot2_fanuc_J1: 0
+  robot2_fanuc_J2: 0
+  robot2_fanuc_J3: 0
+  robot2_fanuc_J4: 0
+  robot2_fanuc_J5: 0
+  robot2_fanuc_J6: 0
+  robot2_lt_J1: 0

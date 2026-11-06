@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="preentend">
+    <xacro:arg name="initial_positions_file" default="initial_positions.yaml" />
+
+    <!-- Import preentend urdf file -->
+    <xacro:include filename="$(find preentend_description)/robot/preentend.urdf.xacro" />
+
+    <!-- Import control_xacro -->
+    <xacro:include filename="preentend.ros2_control.xacro" />
+
+
+    <xacro:preentend_ros2_control name="FakeSystem" initial_positions_file="$(arg initial_positions_file)"/>
+
+</robot>

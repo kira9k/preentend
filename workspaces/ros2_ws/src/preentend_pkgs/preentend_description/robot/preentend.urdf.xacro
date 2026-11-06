@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro" name="preentend">
+    <xacro:include filename="$(find preentend_description)/urdf/preentend_urdf_macro.xacro" />
+
+    <link name="world" />
+
+    <xacro:preentend_macro prefix="robot1_" parent="world">
+        <origin xyz="0.0 1.5 0.0" rpy="0.0 0.0 0.0" />
+    </xacro:preentend_macro>
+
+    <xacro:preentend_macro prefix="robot2_" parent="world">
+        <origin xyz="0.0 -1.5 0.0" rpy="0.0 0.0 0.0" />
+    </xacro:preentend_macro>
+
+</robot>

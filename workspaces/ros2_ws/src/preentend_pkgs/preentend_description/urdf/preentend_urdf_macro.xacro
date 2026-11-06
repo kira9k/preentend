@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro">
+  <xacro:macro name="preentend_macro" params="prefix parent *origin">
+
+    <xacro:include filename="$(find preentend_description)/urdf/m20_lt_urdf_macro.xacro" />
+    <xacro:m20_lt prefix="${prefix}" parent="${parent}">
+      <xacro:insert_block name="origin" />
+    </xacro:m20_lt>
+
+    <xacro:include filename="$(find preentend_description)/urdf/m20_12_23d_urdf_macro.xacro" />
+    <xacro:m20_12_23d prefix="${prefix}" parent="${prefix}lt_J1_link">
+      <origin xyz="0.0 0.0 0.4" rpy="0 0 0" />
+    </xacro:m20_12_23d>
+
+  </xacro:macro>
+</robot>

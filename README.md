@@ -43,8 +43,6 @@ sudo usermod -aG docker $USER
 newgrp docker
 ```
 
----
-
 ## NVIDIA Container Toolkit
 
 ```shell
@@ -68,7 +66,13 @@ sudo systemctl restart docker
 docker run --rm --runtime=nvidia --gpus all nvcr.io/nvidia/cuda:12.8.0-base-ubuntu24.04 nvidia-smi
 ```
 
----
+# Работа с репозиторием
+
+1. Клонируем репозиторий:
+```shell
+git clone git@github.com:mazhugich-labs/preentend.git
+cd preentend
+```
 
 ## Доступ к файловой системе из Isaac Sim
 
@@ -80,27 +84,7 @@ setfacl -d -m u:$(id -u):rwx workspaces/isaac_sim_ws
 
 > С этими настройками **workspaces/isaac_sim_ws** доступна в контейнере **isaac_sim**, а **workspaces/ros2_ws** в контейнере **ros2**
 
-# Работа с репозиторием
-
-1. Клонируем репозиторий:
-```shell
-git clone git@github.com:mazhugich-labs/preentend.git
-cd preentend
-```
-
-2. Добавляем модули
-- все сразу:
-```shell
-git submodule update --init --recursive
-```
-- выборочно (если модуль содержит другие модули можно добавить в команду флаг `--recursive`):
-```shell
-git submodule update --init <модуль_1> ... <модуль_n>
-```
-
 ## Запуск контейнеров через Makefile
-
-> Если нет make то просто установите ебланы
 
 1. Пример 1. Запуск контейнера ros2:
 ```shell
@@ -140,5 +124,16 @@ source install/setup.bash
 
 Можно посмотреть ртк в **rviz**:
 ```shell
-ros2 launch preentend_description view_preenrend.launch.py
+ros2 launch preentend_description view_preentend.launch.py
 ```
+
+![preentend_description_rviz](docs/assets/preentend_description_rviz.png) ![preentend_description_jsp_gui](docs/assets/preentend_description_jsp_gui.png)
+
+## Пакет preentend_moveit_config
+
+Можно поуправлять роботами по отдельности:
+```shell
+ros2 launch preentend_moveit_config demo.launch.py
+```
+
+![preentend_moveit_config](docs/assets/preentend_moveit_config.gif)
