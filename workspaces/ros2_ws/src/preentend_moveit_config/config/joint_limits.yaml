@@ -40,7 +40,8 @@ joint_limits:
     max_acceleration: 1.0
   left_linear_axis_joint:
     has_velocity_limits: true
-    max_velocity: 0.5
+    # Keep the planned rail speed below the 0.5 m/s hardware limit so Gazebo can track the trajectory.
+    max_velocity: 0.4
     has_acceleration_limits: true
     max_acceleration: 1.0
   right_J1:
@@ -75,6 +76,7 @@ joint_limits:
     max_acceleration: 1.0
   right_linear_axis_joint:
     has_velocity_limits: true
-    max_velocity: 0.5
+    # Same margin for the right rail.
+    max_velocity: 0.4
     has_acceleration_limits: true
     max_acceleration: 1.0

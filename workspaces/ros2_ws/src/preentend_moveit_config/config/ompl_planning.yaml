@@ -167,3 +167,7 @@ right_arm_camera:
     - LazyPRMstar
     - SPARS
     - SPARStwo
+dual_arm_camera:
+  default_planner_config: RRTConnect
+  planner_configs:
+    - RRTConnect

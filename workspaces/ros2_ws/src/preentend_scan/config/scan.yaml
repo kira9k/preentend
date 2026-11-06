@@ -1,0 +1,31 @@
+# Positions are rail joint coordinates in metres, independent of vehicle model.
+# Successive height passes run in opposite directions.
+rail_positions: [-2.6, -1.3, 0.0, 1.3, 2.6]
+settle_seconds: 0.7
+cloud_timeout_seconds: 12.0
+velocity_scaling: 1.0
+acceleration_scaling: 1.0
+point_stride: 4
+voxel_size: 0.02
+
+# Broad workcell ROI. Adjust only if the vehicle extends outside these bounds.
+# [xmin, xmax, ymin, ymax, zmin, zmax] in world coordinates, metres.
+scan_bounds: [-3.0, 3.0, -1.4, 1.4, 0.05, 2.5]
+
+# Camera heights are approximately 1.7, 1.5, 1.3 and 0.8 m at rail zero.
+# J1 stays close to zero, so each arm mainly runs along its own rail.
+# The wrist turns the depth camera toward the space between the rails.
+# The bottom camera pose is pitched down to see sills and wheels.
+levels:
+  - name: upper
+    left: [0.011817991, -0.442911794, -0.969384327, -1.576734921, 1.581013901, 1.044293491]
+    right: [-0.011481291, -0.397409482, -0.936220098, 1.576687748, 1.580650874, -1.031956709]
+  - name: middle
+    left: [0.018044226, -1.124168583, -1.499600276, -1.577413294, 1.587583639, 1.195309087]
+    right: [-0.018162584, -1.145968693, -1.508893146, 1.577244834, 1.587775728, -1.207817121]
+  - name: lower
+    left: [0.015801196, -0.460254634, -1.325912460, -1.582829538, 1.581037600, 0.705076960]
+    right: [-0.015291341, -0.406546616, -1.290704078, 1.582622502, 1.580489571, -0.686581445]
+  - name: bottom
+    left: [0.244318905, 0.269405522, -1.340134423, -1.805318841, 1.311607477, -0.038892163]
+    right: [-0.224628036, 0.284906112, -1.304451171, 1.790761965, 1.316704062, 0.018694920]

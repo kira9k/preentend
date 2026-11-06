@@ -33,6 +33,7 @@ def main():
     car.primitives.append(box)
 
     pose = Pose()
+    pose.position.x = 0.5
     pose.position.z = 0.78
     pose.orientation.w = 1.0
     car.primitive_poses.append(pose)
