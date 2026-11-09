@@ -388,7 +388,7 @@ class ScanNode(Node):
     def _joint_names(side):
         return [f"{side}_linear_axis_joint"] + [f"{side}_J{i}" for i in range(1, 7)]
 
-    def _move_goal(self, waypoints, speed_factor=1.0):
+    def _move_goal(self, waypoints, speed_factor=1.0, fixed_joints=()):
         goal = MoveGroup.Goal()
         request = goal.request
         request.group_name = "dual_arm_camera"
@@ -410,17 +410,32 @@ class ScanNode(Node):
                 item.weight = 1.0
                 constraints.joint_constraints.append(item)
         request.goal_constraints.append(constraints)
+        if fixed_joints:
+            path_constraints = Constraints()
+            for joint, position in fixed_joints:
+                item = JointConstraint()
+                item.joint_name = joint
+                item.position = float(position)
+                item.tolerance_above = 0.02
+                item.tolerance_below = 0.02
+                item.weight = 1.0
+                path_constraints.joint_constraints.append(item)
+            request.path_constraints = path_constraints
         goal.planning_options.plan_only = False
         goal.planning_options.planning_scene_diff.is_diff = True
         goal.planning_options.planning_scene_diff.robot_state.is_diff = True
 
         return goal
 
-    def _move_pair(self, waypoints):
+    def _move_pair(self, waypoints, fixed_joints=()):
         for attempt in range(2):
             accepted = self._wait_future(
                 self.move_client.send_goal_async(
-                    self._move_goal(waypoints, speed_factor=1.0 if attempt == 0 else 0.5)
+                    self._move_goal(
+                        waypoints,
+                        speed_factor=1.0 if attempt == 0 else 0.5,
+                        fixed_joints=fixed_joints,
+                    )
                 ), 15.0
             )
             if accepted is None or not accepted.accepted:
@@ -539,10 +554,21 @@ class ScanNode(Node):
                 "captures": [],
                 "status": "running",
             }
+            previous_pair = None
             for offset in range(0, len(route), 2):
                 if self._cancel.is_set():
                     raise InterruptedError("Сканирование остановлено")
                 pair = route[offset : offset + 2]
+                fixed_joints = []
+                if previous_pair is not None:
+                    for previous, current in zip(previous_pair, pair):
+                        for joint, previous_position, current_position in zip(
+                            self._joint_names(current["robot"]),
+                            previous["joints"],
+                            current["joints"],
+                        ):
+                            if abs(previous_position - current_position) < 1e-6:
+                                fixed_joints.append((joint, previous_position))
                 self._set_state(
                     phase=(
                         f"{offset // 2 + 1}/{len(route) // 2}: оба робота, "
@@ -550,7 +576,8 @@ class ScanNode(Node):
                         f"рельс {pair[0]['rail_position']:+.1f} м"
                     )
                 )
-                self._move_pair(pair)
+                self._move_pair(pair, fixed_joints=fixed_joints)
+                previous_pair = pair
                 time.sleep(float(self.config["settle_seconds"]))
                 for index, waypoint in enumerate(pair, start=offset + 1):
                     side = waypoint["robot"]
