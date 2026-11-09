@@ -319,7 +319,7 @@ Visualization Manager:
         Goal State Color: 250; 128; 0
         Interactive Marker Size: 0.5
         Joint Violation Color: 255; 0; 255
-        Planning Group: right_arm_tcp
+        Planning Group: dual_arm_camera
         Query Goal State: true
         Query Start State: false
         Show Workspace: false

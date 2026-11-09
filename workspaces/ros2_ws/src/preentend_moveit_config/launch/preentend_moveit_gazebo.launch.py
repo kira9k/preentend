@@ -1,12 +1,11 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
 
 
 def generate_launch_description():
-    rviz_config = LaunchConfiguration("rviz_config")
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             PathJoinSubstitution(
@@ -30,21 +29,7 @@ def generate_launch_description():
                 [FindPackageShare("preentend_moveit_config"), "launch", "_moveit_common.launch.py"]
             )
         ),
-        launch_arguments={
-            "use_sim_time": "true",
-            "use_rviz": "true",
-            "rviz_config": rviz_config,
-        }.items(),
+        launch_arguments={"use_sim_time": "true", "use_rviz": "true"}.items(),
     )
 
-    return LaunchDescription([
-        DeclareLaunchArgument(
-            "rviz_config",
-            default_value=PathJoinSubstitution(
-                [FindPackageShare("preentend_moveit_config"), "rviz", "moveit.rviz"]
-            ),
-        ),
-        gazebo,
-        ros2_control,
-        moveit,
-    ])
+    return LaunchDescription([gazebo, ros2_control, moveit])

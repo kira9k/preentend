@@ -11,8 +11,6 @@ ros2-up:
 ros2-enter:
 	@docker compose exec ros2 bash
 
-ros2-exec: ros2-enter
-
 ros2-down:
 	@docker compose down ros2
 

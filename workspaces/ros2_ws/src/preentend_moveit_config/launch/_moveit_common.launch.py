@@ -30,13 +30,6 @@ def generate_launch_description():
         ],
     )
 
-    car_collision = Node(
-        package="preentend_moveit_config",
-        executable="add_car_collision.py",
-        output="screen",
-        parameters=[{"use_sim_time": use_sim_time}],
-    )
-
     rviz = Node(
         package="rviz2",
         executable="rviz2",
@@ -64,7 +57,6 @@ def generate_launch_description():
                 ),
             ),
             move_group,
-            car_collision,
             rviz,
         ]
     )

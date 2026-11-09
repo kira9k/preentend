@@ -14,4 +14,3 @@ endif()
 
 install(DIRECTORY config rviz srdf DESTINATION share/${PROJECT_NAME})
 install(FILES .setup_assistant DESTINATION share/${PROJECT_NAME})
-install(PROGRAMS scripts/add_car_collision.py DESTINATION lib/${PROJECT_NAME})

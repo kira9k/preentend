@@ -2,13 +2,22 @@
 <package format="3">
   <name>preentend_scan</name>
   <version>0.1.0</version>
-  <description>Rail based dual robot vehicle scanning scenario</description>
+  <description>Optional dual robot vehicle scan scenario</description>
   <maintainer email="mazhugich.labs@gmail.com">mazhugich-labs</maintainer>
   <license>BSD-3-Clause</license>
   <buildtool_depend>ament_cmake</buildtool_depend>
   <exec_depend>preentend_moveit_config</exec_depend>
+  <exec_depend>preentend_gazebo</exec_depend>
+  <exec_depend>preentend_controller</exec_depend>
+  <exec_depend>preentend_description</exec_depend>
+  <exec_depend>moveit_configs_utils</exec_depend>
+  <exec_depend>moveit_ros_move_group</exec_depend>
+  <exec_depend>rviz2</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>rclpy</exec_depend>
   <exec_depend>moveit_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>shape_msgs</exec_depend>
   <exec_depend>control_msgs</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>sensor_msgs_py</exec_depend>
@@ -21,5 +30,8 @@
   <exec_depend>python3-pyqt5</exec_depend>
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
-  <export><build_type>ament_cmake</build_type></export>
+  <export>
+    <build_type>ament_cmake</build_type>
+    <gazebo_ros gazebo_model_path="${prefix}/../" />
+  </export>
 </package>
